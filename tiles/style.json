@@ -1,0 +1,1 @@
+{"version":8,"name":"hanamigawa","sources":{"hanamigawa":{"type":"vector","tiles":"./{z}/{x}/{y}.mvt","minzoom":0,"maxzoom":14,"attribution":"e-Stat","center":[140.064697,35.666222,14.0],"bounds":[140.034815,35.641263,140.154241,35.714115]}},"layers":[{"id":"hanamigawa","type":"vector","source":"hanamigawa"}]}
