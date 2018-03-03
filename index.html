@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+<head>
+<meta charset='utf-8' />
+<meta name='viewport' content='initial-scale=1,maximum-scale=1,user-scalable=no' />
+<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.1/mapbox-gl.js'></script>
+<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.44.1/mapbox-gl.css' rel='stylesheet' />
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+</style>
+</head>
+<body>
+<div id='map' />
+<script>
+var urlParam = location.search.substring(1);
+var year = 2017
+var target = 'all'
+var type = 'all'
+if(urlParam) {
+  var param = urlParam.split('&');
+  var params = {};
+  for (i = 0; i < param.length; i++) {
+    var paramItem = param[i].split('=');
+    paramArray[paramItem[0]] = paramItem[1];
+  }
+  if (params.year) {
+    year = params.year
+  }
+  if (params.target) {
+    target = params.target
+  }
+  if (params.type) {
+    type = params.type
+  }
+}
+var heat_value = 'count_' + type
+console.log('year = ', year , 'target = ', target, 'type = ', heat_value)
+var map = new mapboxgl.Map({
+  container: 'map',
+  style: {
+    version: 8,
+    sources: {
+      pale: {
+        type: 'raster', attribution: 'GSI Tiles (pale)',
+        tiles: ['https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png'],
+      },
+      heat: {
+        "type": "geojson",
+        "data": "./" + year + "_" + target + "_data.geojson"
+      }
+    },
+    layers: [{
+      id: 'pale', type: 'raster', source: 'pale',
+      minzoom: 0, maxzoom: 18
+    }]
+  },
+  center: [135, 35], zoom: 5, attributionControl: true, hash: true
+})
+map.addControl(new mapboxgl.NavigationControl())
+map.addLayer({
+  "id": "jinko-heat",
+  "type": "heatmap",
+  "source": "heat",
+  "maxzoom": 14,
+  "paint": {
+    // Increase the heatmap weight based on frequency and property magnitude
+    "heatmap-weight": [
+        "interpolate",
+        ["linear"],
+        ["get", heat_value],
+        0, 0,
+        6, 1
+    ],
+    // Increase the heatmap color weight weight by zoom level
+    // heatmap-intensity is a multiplier on top of heatmap-weight
+    "heatmap-intensity": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        0, 1,
+        9, 3
+    ],
+    // Color ramp for heatmap.  Domain is 0 (low) to 1 (high).
+    // Begin color ramp at 0-stop with a 0-transparancy color
+    // to create a blur-like effect.
+    "heatmap-color": [
+        "interpolate",
+        ["linear"],
+        ["heatmap-density"],
+        0, "rgba(33,102,172,0)",
+        0.2, "rgb(103,169,207)",
+        0.4, "rgb(209,229,240)",
+        0.6, "rgb(253,219,199)",
+        0.8, "rgb(239,138,98)",
+        1, "rgb(178,24,43)"
+    ],
+    // Adjust the heatmap radius by zoom level
+    "heatmap-radius": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        0, 2,
+        9, 20
+    ],
+    // Transition from heatmap to circle layer by zoom level
+    "heatmap-opacity": [
+        "interpolate",
+        ["linear"],
+        ["zoom"],
+        7, 1,
+        9, 0
+    ],
+  }
+}, 'pale');
+</script>
+</body>
+</html>
